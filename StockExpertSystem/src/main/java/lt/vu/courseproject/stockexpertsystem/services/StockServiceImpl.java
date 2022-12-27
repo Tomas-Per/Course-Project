@@ -39,7 +39,7 @@ public class StockServiceImpl implements StockService{
 
     @Override
     public List<Boolean> getSuggestion(String algorithm, String ticker) {
-        Stock stock = stockRepository.findByTicker(ticker);
+        Stock stock = getStock(ticker);
 
         if(algorithm.equals("BC")) {
             return expertSystem.backwardChain(Stream.concat(stock.getFacts().stream(), economicIndicators.getFacts().stream()).collect(Collectors.toList()));
