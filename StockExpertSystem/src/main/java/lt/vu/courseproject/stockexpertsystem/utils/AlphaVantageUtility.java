@@ -2,6 +2,7 @@ package lt.vu.courseproject.stockexpertsystem.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+import lt.vu.courseproject.stockexpertsystem.models.indicator.Data;
 import lt.vu.courseproject.stockexpertsystem.models.indicator.Indicator;
 import lt.vu.courseproject.stockexpertsystem.models.stock.Info;
 import lt.vu.courseproject.stockexpertsystem.models.stock.Stock;
@@ -67,4 +68,48 @@ public class AlphaVantageUtility {
         return stock;
     }
 
+    public Indicator getIndicatorFromAV(String identifier) {
+
+        String fullUrl = switch (identifier) {
+            case "GDP" -> baseApiUrl + "REAL_GDP&interval=quarterly" + "&apikey=" + System.getenv("alphaVantageApiKey");
+            case "INF" -> baseApiUrl + "INFLATION" + "&apikey=" + System.getenv("alphaVantageApiKey");
+            case "IR" -> baseApiUrl + "FEDERAL_FUNDS_RATE&interval=monthly" + "&apikey=" + System.getenv("alphaVantageApiKey");
+            default -> baseApiUrl + "REAL_GDP&interval=quarterly" + "&apikey=" + System.getenv("alphaVantageApiKey");
+        };
+
+        Indicator indicator = new Indicator();
+        try {
+            var client = HttpClient.newHttpClient();
+            var request = HttpRequest.newBuilder(
+                            URI.create(fullUrl))
+                    .header("accept", "application/json")
+                    .build();
+
+            HttpResponse<String> response = null;
+            try {
+                response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            LinkedTreeMap data = gson.fromJson(response.body(), LinkedTreeMap.class);
+
+            ArrayList<LinkedTreeMap> data1 = (ArrayList<LinkedTreeMap>) data.get("data");
+
+            List<Data> dataList = new ArrayList<>();
+            for (LinkedTreeMap map : data1) {
+                Data singleDataPoint = new Data();
+                singleDataPoint.setDate(map.get("date").toString());
+                singleDataPoint.setValue(Double.parseDouble(map.get("value").toString()));
+                dataList.add(singleDataPoint);
+            }
+
+            indicator.setName(identifier);
+            indicator.setData(dataList);
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return indicator;
+    }
 }
