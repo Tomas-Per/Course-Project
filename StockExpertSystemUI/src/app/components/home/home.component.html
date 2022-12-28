@@ -1,0 +1,10 @@
+<form>
+  <label>Ticker:</label> <br>
+  <input [(ngModel)]="ticker" type="text" name="ticker" required/> <br>
+  <label>Algorithm:</label>
+  <input [(ngModel)]="algorithm" value="FC" type="radio" name="algorithm"/> <label>Forward Chaining</label>
+  <input [(ngModel)]="algorithm" value="BC" type="radio" name="algorithm"/> <label>Backward Chaining</label>
+  <br>
+  <input type="submit" (click)="onSubmit()"/>
+</form>
+
